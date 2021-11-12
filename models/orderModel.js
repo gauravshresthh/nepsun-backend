@@ -2,37 +2,65 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema(
 	{
-		name: {
-			type: String,
-			required: [true, 'A vendor must have a name'],
-		},
-		contact_name: {
-			type: String,
-			required: [true, 'A vendor must have a contact name'],
-		},
-		address: {
-			type: String,
-			required: [true, 'A vendor must have an address'],
-		},
-		city: String,
-		state: String,
-		postal_code: String,
-		country: String,
-		phone: String,
-		email: String,
-		url: String,
-		type_of_products: String,
-		discount_available: Boolean,
-		discount: String,
-		logo: String,
-		photo: String,
-		description: String,
-		seo_title: String,
-		seo_description: String,
-		slug: String,
-		onboarded_by: {
+		user_id: {
 			type: mongoose.Schema.Types.ObjectId,
+			required: true,
 			ref: 'user',
+		},
+		order_items: [
+			{
+				name: { type: String, required: true },
+				qty: { type: Number, required: true },
+				image: { type: String, required: true },
+				price: { type: Number, required: true },
+				product_id: {
+					type: mongoose.Schema.Types.ObjectId,
+					required: true,
+					ref: 'product',
+				},
+			},
+		],
+		payment_method: {
+			type: String,
+			required: true,
+		},
+		payment_result: {
+			id: { type: String },
+			status: { type: String },
+			update_time: { type: String },
+			email_address: { type: String },
+		},
+		shipping_address: {
+			address: { type: String, required: true },
+			city: { type: String, required: true },
+			postalCode: { type: String, required: true },
+			country: { type: String, required: true },
+		},
+		shipping_price: {
+			type: Number,
+			required: true,
+			default: 0.0,
+		},
+		total_price: {
+			type: Number,
+			required: true,
+			default: 0.0,
+		},
+		is_paid: {
+			type: Boolean,
+			required: true,
+			default: false,
+		},
+		paid_at: {
+			type: Date,
+		},
+		delivery_status: {
+			type: String,
+			required: true,
+			default: 'Received',
+		},
+		delivered_at: {
+			type: Date,
 		},
 	},
 	{ timestamps: true }
