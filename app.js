@@ -40,6 +40,7 @@ app.use(cors());
 
 const categoriesRouter = require('./routes/categoriesRoutes');
 const subCategoriesRouter = require('./routes/subCategoriesRoutes');
+const reviewsRouter = require('./routes/reviewsRoutes');
 const userRouter = require('./routes/userRoutes');
 const homeRouter = require('./routes/homeRoutes');
 const AppError = require('./utils/appError');
@@ -48,6 +49,7 @@ app.use('/', homeRouter);
 
 app.use('/api/v1/categories', categoriesRouter);
 app.use('/api/v1/subcategories', subCategoriesRouter);
+app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {

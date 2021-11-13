@@ -18,7 +18,6 @@ const productSchema = new mongoose.Schema(
 		vendor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'vendor' },
 		count_in_stock: {
 			type: Number,
-			required: true,
 			default: 0,
 		},
 		video_url: String,
