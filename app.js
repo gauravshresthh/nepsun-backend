@@ -38,6 +38,7 @@ app.use('/api', limiter);
 app.use(cors());
 // app.use(fileupload());
 
+const productRouter = require('./routes/productRoutes');
 const categoriesRouter = require('./routes/categoriesRoutes');
 const subCategoriesRouter = require('./routes/subCategoriesRoutes');
 const reviewsRouter = require('./routes/reviewsRoutes');
@@ -47,11 +48,11 @@ const AppError = require('./utils/appError');
 
 app.use('/', homeRouter);
 
+app.use('/api/v1/products', productRouter);
 app.use('/api/v1/categories', categoriesRouter);
 app.use('/api/v1/subcategories', subCategoriesRouter);
 app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/users', userRouter);
-
 
 app.all('*', (req, res, next) => {
 	next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
