@@ -9,7 +9,7 @@ process.on('uncaughtException', err => {
 	process.exit(1);
 });
 
-const DB = process.env.DATABASE_LOCAL;
+const DB = process.env.DATABASE;
 // process.env.DATABASE;
 
 mongoose
