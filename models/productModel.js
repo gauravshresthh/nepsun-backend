@@ -28,7 +28,6 @@ const productSchema = new mongoose.Schema(
 			type: Boolean,
 			default: true,
 		},
-		is_available: { type: Boolean, default: true },
 		price: {
 			type: Number,
 			required: true,

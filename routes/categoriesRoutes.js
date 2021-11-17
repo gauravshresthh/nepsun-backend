@@ -10,7 +10,7 @@ router
 	.get(categoriesController.getAllCategories)
 	.post(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.restrictTo('user'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		categoriesController.createCategories

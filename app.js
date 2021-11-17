@@ -52,6 +52,7 @@ app.use('/api/v1/subcategories', subCategoriesRouter);
 app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/users', userRouter);
 
+
 app.all('*', (req, res, next) => {
 	next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
 });

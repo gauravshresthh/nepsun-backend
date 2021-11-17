@@ -14,6 +14,7 @@ const vendorSchema = new mongoose.Schema(
 			type: String,
 			required: [true, 'A vendor must have an address'],
 		},
+		is_available: { type: Boolean, default: true },
 		city: String,
 		state: String,
 		postal_code: String,
