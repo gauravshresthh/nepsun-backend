@@ -4,6 +4,7 @@ const path = require('path');
 const compression = require('compression');
 const globalErrorHandler = require('./controllers/errorController');
 const app = express();
+const bodyParser = require('body-parser');
 // const fileupload = require('express-fileupload');
 
 const xss = require('xss-clean');
@@ -16,6 +17,7 @@ app.use(compression());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.resolve(__dirname, 'client/build')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV == 'development') {
 	app.use(morgan('dev'));

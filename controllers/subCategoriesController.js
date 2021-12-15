@@ -29,7 +29,8 @@ exports.getAllSubCategories = catchAsync(async (req, res, next) => {
 		.filter({ name: regex })
 		.sort()
 		.limitFields()
-		.paginate();
+		.paginate()
+		.populate('category_id');
 	const subCategories = await features.query;
 	const subCategoriesCount = await SubCategories.countDocuments();
 

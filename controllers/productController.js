@@ -18,7 +18,9 @@ exports.getAllProduct = catchAsync(async (req, res, next) => {
 		.filter({ name: regex })
 		.sort()
 		.limitFields()
-		.paginate();
+		.paginate()
+		.populate({ path: 'sub_categories_id', select: 'name' })
+		.populate({ path: 'created_by', select: 'name' });
 	const product = await features.query;
 	const productCount = await Product.countDocuments();
 

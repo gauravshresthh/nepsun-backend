@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const reviewsSchema = mongoose.Schema(
 	{
-		rating: { type: Number, required: true },
+		rating: { type: Number, required: true, min: 0, max: 5 },
 		comment: { type: String, required: true },
 		user_id: {
 			type: mongoose.Schema.Types.ObjectId,

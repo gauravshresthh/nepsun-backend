@@ -15,8 +15,7 @@ const handleDuplicateFieldsDB = err => {
 
 const handleValidationErrorDB = err => {
 	const errors = Object.values(err.errors).map(el => el.message);
-
-	const message = `Invalid data inserted. ${errors.join('. ')}`;
+	const message = `Invalid data inserted. ${errors.join(' ')}`;
 
 	// const message = Object.values(err.errors).map((el) => el.message);
 

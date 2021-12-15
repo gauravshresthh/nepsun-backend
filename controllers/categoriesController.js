@@ -74,21 +74,25 @@ exports.deleteCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
-	const category = await Categories.findById(req.params.id);
-	if (!category) {
-		return next(new CustomError('No category found with that id', 404));
-	}
+	const category = await SubCategories.find({ category_id: req.params.id });
+	console.log(category);
+	// const category = await Categories.findById(req.params.id);
+	// if (!category) {
+	// 	return next(new CustomError('No category found with that id', 404));
+	// }
 
-	const imagePath = path.join(__dirname, '..', 'public', category.image);
-	fs.unlink(imagePath, async err => {
-		if (err) {
-			await Categories.findByIdAndDelete(req.params.id);
-			return next(new CustomError('Error deleting category image', 500));
-		} else {
-			await Categories.findByIdAndDelete(req.params.id);
-			return res.status(200).json({ status: 'success', data: {} });
-		}
-	});
+	// const imagePath = path.join(__dirname, '..', 'public', category.image);
+	// fs.unlink(imagePath, async err => {
+	// 	if (err) {
+	// 		await Categories.findByIdAndDelete(req.params.id);
+	// 		return next(new CustomError('Error deleting category image', 500));
+	// 	} else {
+	// 		await Categories.findByIdAndDelete(req.params.id);
+	// 		return res.status(200).json({ status: 'success', data: {} });
+	// 	}
+	// });
+
+	// old approach to deleting category image
 	// try {
 	// 	fs.unlinkSync(`public/${category.image}`);
 	// 	await Categories.findByIdAndDelete(req.params.id);
