@@ -10,9 +10,9 @@ router
 	.get(productController.getAllProduct)
 	.post(
 		authController.protect,
-		authController.restrictTo('user'),
-		uploadPhotoHelper.uploadPhoto,
-		uploadPhotoHelper.resizePhoto,
+		authController.permit('admin'),
+		uploadPhotoHelper.uploadPhotos,
+		uploadPhotoHelper.resizePhotos,
 		productController.createProduct
 	);
 
@@ -21,14 +21,14 @@ router
 	.get(productController.getProduct)
 	.put(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		productController.updateProduct
 	)
 	.delete(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		productController.deleteProduct
 	);
 

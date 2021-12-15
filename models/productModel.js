@@ -15,7 +15,6 @@ const productSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'sub_categories',
 		},
-		vendor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'vendor' },
 		count_in_stock: {
 			type: Number,
 			default: 0,

@@ -10,7 +10,7 @@ router
 	.get(subCategoriesController.getAllSubCategories)
 	.post(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		subCategoriesController.createSubCategories
@@ -21,14 +21,14 @@ router
 	.get(subCategoriesController.getSubCategories)
 	.put(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		subCategoriesController.updateSubCategories
 	)
 	.delete(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		subCategoriesController.deleteSubCategories
 	);
 

@@ -1,6 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
-const CustomError = require('../utils/appError');
+const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const multerStorage = multer.memoryStorage();
 
@@ -17,19 +17,35 @@ const upload = multer({
 	fileFilter: multerFilter,
 });
 
+exports.uploadPhotos = upload.array('photos', 4);
+
+exports.resizePhotos = catchAsync(async (req, res, next) => {
+	if (!req.files) return next();
+	let images = [];
+	req.files.map(async file => {
+		file.filename = `${Date.now()}${Math.round(Math.random() * 1e3)}.jpeg`;
+		images.push(`uploads/${file.filename}`);
+		await sharp(file.buffer)
+			.resize(800)
+			.toFormat('jpeg')
+			.jpeg({ quality: 90 })
+			.toFile(`public/uploads/${file.filename}`);
+	});
+	req.body.images = [...images];
+	next();
+});
+
 exports.uploadPhoto = upload.single('image');
 
 exports.resizePhoto = catchAsync(async (req, res, next) => {
 	if (!req.file) return next();
-	req.file.filename = `${Date.now()}.jpeg`;
-
+	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
+	req.body.image = `uploads/${req.file.filename}`;
 	await sharp(req.file.buffer)
 		.resize(800)
 		.toFormat('jpeg')
 		.jpeg({ quality: 90 })
 		.toFile(`public/uploads/${req.file.filename}`);
-
-	req.body.image = `uploads/${req.file.filename}`;
 
 	next();
 });

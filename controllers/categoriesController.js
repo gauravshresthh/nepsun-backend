@@ -1,8 +1,9 @@
 const Categories = require('../models/categoriesModel');
-const AppError = require('../utils/appError');
+const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
+const path = require('path');
 
 exports.createCategories = catchAsync(async (req, res, next) => {
 	const { name } = req.body;
@@ -43,18 +44,18 @@ exports.getCategories = catchAsync(async (req, res, next) => {
 	const category = await Categories.findById(req.params.id);
 
 	if (!category) {
-		return next(new AppError('No category found with that id', 404));
+		return next(new CustomError('No category found with that id', 404));
 	}
 	res.status(200).json({ status: 'success', data: category });
 });
 
 exports.updateCategories = catchAsync(async (req, res, next) => {
 	if (!req.params.id) {
-		return next(new AppError('Please provide a category ID', 400));
+		return next(new CustomError('Please provide a category ID', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
 	if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-		return next(new AppError('Invalid category ID provided.', 400));
+		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
 	const category = await Categories.findByIdAndUpdate(req.params.id, req.body, {
@@ -63,28 +64,38 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 	});
 
 	if (!category) {
-		return next(new AppError('No category found with that id', 404));
+		return next(new CustomError('No category found with that id', 404));
 	}
 	res.status(200).json({ status: 'success', data: category });
 });
 
 exports.deleteCategories = catchAsync(async (req, res, next) => {
 	if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-		return next(new AppError('Invalid category ID provided.', 400));
+		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
 	const category = await Categories.findById(req.params.id);
 	if (!category) {
-		return next(new AppError('No category found with that id', 404));
-	}
-	let errorDeletingImage = false;
-	try {
-		fs.unlinkSync(`public/${category.image}`);
-		await Categories.findByIdAndDelete(req.params.id);
-	} catch (e) {
-		errorDeletingImage = true;
-		await Categories.findByIdAndDelete(req.params.id);
+		return next(new CustomError('No category found with that id', 404));
 	}
 
-	res.status(200).json({ status: 'success', errorDeletingImage, data: {} });
+	const imagePath = path.join(__dirname, '..', 'public', category.image);
+	fs.unlink(imagePath, async err => {
+		if (err) {
+			await Categories.findByIdAndDelete(req.params.id);
+			return next(new CustomError('Error deleting category image', 500));
+		} else {
+			await Categories.findByIdAndDelete(req.params.id);
+			return res.status(200).json({ status: 'success', data: {} });
+		}
+	});
+	// try {
+	// 	fs.unlinkSync(`public/${category.image}`);
+	// 	await Categories.findByIdAndDelete(req.params.id);
+	// } catch (e) {
+	// 	errorDeletingImage = true;
+	// 	await Categories.findByIdAndDelete(req.params.id);
+	// }
+
+	// res.status(200).json({ status: 'success', errorDeletingImage, data: {} });
 });

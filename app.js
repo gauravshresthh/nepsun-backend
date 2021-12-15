@@ -26,13 +26,13 @@ app.use(mongoSanitize());
 app.use(helmet());
 app.use(xss());
 
-const limiter = rateLimit({
-	windowMs: 10 * 60 * 1000,
-	max: 500,
-	message: `Too many requests from this IP , please try again in a hour`,
-});
+// const limiter = rateLimit({
+// 	windowMs: 10 * 60 * 1000,
+// 	max: 500,
+// 	message: `Too many requests from this IP , please try again in a hour`,
+// });
 
-app.use('/api', limiter);
+// app.use('/api', limiter);
 
 // app.use(hpp());
 app.use(cors());
@@ -44,7 +44,7 @@ const subCategoriesRouter = require('./routes/subCategoriesRoutes');
 const reviewsRouter = require('./routes/reviewsRoutes');
 const userRouter = require('./routes/userRoutes');
 const homeRouter = require('./routes/homeRoutes');
-const AppError = require('./utils/appError');
+const CustomError = require('./utils/CustomError');
 
 app.use('/', homeRouter);
 
@@ -55,7 +55,7 @@ app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {
-	next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
+	next(new CustomError(`Cant find ${req.originalUrl} on this server`, 404));
 });
 
 app.use(globalErrorHandler);

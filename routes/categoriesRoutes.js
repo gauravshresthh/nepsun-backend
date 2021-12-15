@@ -10,7 +10,7 @@ router
 	.get(categoriesController.getAllCategories)
 	.post(
 		authController.protect,
-		authController.restrictTo('user'),
+		authController.permit('admin'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		categoriesController.createCategories
@@ -21,14 +21,14 @@ router
 	.get(categoriesController.getCategories)
 	.put(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		uploadPhotoHelper.uploadPhoto,
 		uploadPhotoHelper.resizePhoto,
 		categoriesController.updateCategories
 	)
 	.delete(
 		authController.protect,
-		authController.restrictTo('admin'),
+		authController.permit('admin'),
 		categoriesController.deleteCategories
 	);
 
