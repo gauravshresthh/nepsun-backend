@@ -89,7 +89,7 @@ exports.deleteCategories = catchAsync(async (req, res, next) => {
 		category_id: req.params.id,
 	});
 
-	if (categoryHasSubCategories) {
+	if (categoryHasSubCategories.length) {
 		return next(
 			new CustomError(
 				'There are sub-categories that depend on this category',
