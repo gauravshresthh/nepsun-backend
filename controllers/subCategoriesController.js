@@ -84,28 +84,31 @@ exports.deleteSubCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid sub-category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
+
+	const subCategory = await SubCategories.findById(req.params.id);
+	if (!subCategory) {
+		return next(new CustomError('No sub-category found with that id', 404));
+	}
 	// Checking if the category has dependent products or not
 	const subCategoryHasProducts = await Product.find({
-		sub_category_id: req.params.id,
+		sub_categories_id: req.params.id,
 	});
-
-	if (!subCategoryHasProducts) {
-		const subCategory = await SubCategories.findById(req.params.id);
-		if (!subCategory) {
-			return next(new CustomError('No sub-category found with that id', 404));
-		}
-		const imagePath = path.join(__dirname, '..', 'public', subCategory.image);
-		fs.unlink(imagePath, async err => {
-			if (err) {
-				await SubCategories.findByIdAndDelete(req.params.id);
-				return next(new CustomError('Error deleting sub-category image', 500));
-			} else {
-				await SubCategories.findByIdAndDelete(req.params.id);
-				return res.status(200).json({ status: 'success', data: {} });
-			}
-		});
+	if (subCategoryHasProducts.length) {
+		return next(
+			new CustomError(
+				'There are products that depend on this sub-category',
+				400
+			)
+		);
 	}
-	return next(
-		new CustomError('There are products that depend on this sub-category', 400)
-	);
+	const imagePath = path.join(__dirname, '..', 'public', subCategory.image);
+	fs.unlink(imagePath, async err => {
+		if (err) {
+			await SubCategories.findByIdAndDelete(req.params.id);
+			return next(new CustomError('Error deleting sub-category image', 500));
+		} else {
+			await SubCategories.findByIdAndDelete(req.params.id);
+			return res.status(200).json({ status: 'success', data: {} });
+		}
+	});
 });

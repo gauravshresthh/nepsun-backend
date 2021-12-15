@@ -80,34 +80,33 @@ exports.deleteCategories = catchAsync(async (req, res, next) => {
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
 
+	const category = await Categories.findById(req.params.id);
+	if (!category) {
+		return next(new CustomError('No category found with that id', 404));
+	}
 	// Checking if the category has dependent Subcategories or not
 	const categoryHasSubCategories = await SubCategories.find({
 		category_id: req.params.id,
 	});
 
-	if (!categoryHasSubCategories) {
-		const category = await Categories.findById(req.params.id);
-		if (!category) {
-			return next(new CustomError('No category found with that id', 404));
-		}
-
-		const imagePath = path.join(__dirname, '..', 'public', category.image);
-		fs.unlink(imagePath, async err => {
-			if (err) {
-				await Categories.findByIdAndDelete(req.params.id);
-				return next(new CustomError('Error deleting category image', 500));
-			} else {
-				await Categories.findByIdAndDelete(req.params.id);
-				return res.status(200).json({ status: 'success', data: {} });
-			}
-		});
+	if (categoryHasSubCategories) {
+		return next(
+			new CustomError(
+				'There are sub-categories that depend on this category',
+				400
+			)
+		);
 	}
-	return next(
-		new CustomError(
-			'There are sub-categories that depend on this category',
-			400
-		)
-	);
+	const imagePath = path.join(__dirname, '..', 'public', category.image);
+	fs.unlink(imagePath, async err => {
+		if (err) {
+			await Categories.findByIdAndDelete(req.params.id);
+			return next(new CustomError('Error deleting category image', 500));
+		} else {
+			await Categories.findByIdAndDelete(req.params.id);
+			return res.status(200).json({ status: 'success', data: {} });
+		}
+	});
 
 	// old approach to deleting category image
 	// try {
