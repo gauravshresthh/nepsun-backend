@@ -36,7 +36,8 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 
 	return res.status(200).json({
 		status: 'success',
-		reviewsCount,
+		total: reviewsCount,
+		currentDataCount: reviews.length,
 		data: reviews,
 	});
 });

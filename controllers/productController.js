@@ -26,7 +26,8 @@ exports.getAllProduct = catchAsync(async (req, res, next) => {
 
 	return res.status(200).json({
 		status: 'success',
-		productCount,
+		total: productCount,
+		currentDataCount: product.length,
 		data: product,
 	});
 });
@@ -69,18 +70,30 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 	if (!product) {
 		return next(new CustomError('No Product found with that id', 404));
 	}
+	let imagePath;
 	let errorDeletingImage = false;
-	try {
-		fs.unlinkSync(`public/${product.image}`);
-		await Product.findByIdAndDelete(req.params.id);
-	} catch (e) {
-		errorDeletingImage = true;
-		return res.status(500).json({
-			status: 'error',
-			errorDeletingImage,
-			data: { message: 'Failed to delete image , please try again' },
+	product.images &&
+		product.images.map(image => {
+			imagePath = path.join(__dirname, '..', 'public', category.image);
+			fs.unlink(imagePath, err => {
+				if (err) {
+					errorDeletingImage = true;
+				}
+			});
 		});
+	if (errorDeletingImage) {
+		await Categories.findByIdAndDelete(req.params.id);
+		return next(new CustomError('Error deleting category image', 500));
 	}
+	await Categories.findByIdAndDelete(req.params.id);
+	return res.status(200).json({ status: 'success', data: {} });
+});
 
-	res.status(200).json({ status: 'success', errorDeletingImage, data: {} });
+exports.getLatestProducts = catchAsync(async (req, res, next) => {
+	const products = await Product.find().sort({ createdAt: 1 }).limit(100);
+	return res.status(200).json({
+		status: 'success',
+		currentDataCount: products.length,
+		data: products,
+	});
 });
