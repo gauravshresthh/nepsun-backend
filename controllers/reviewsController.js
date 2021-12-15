@@ -28,7 +28,9 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 		.filter({ name: regex })
 		.sort()
 		.limitFields()
-		.paginate();
+		.paginate()
+		.populate({ path: 'user_id', select: 'name' })
+		.populate({ path: 'product_id', select: 'name' });
 	const reviews = await features.query;
 	const reviewsCount = await Reviews.countDocuments();
 
