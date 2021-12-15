@@ -1,4 +1,5 @@
 const Categories = require('../models/categoriesModel');
+const SubCategories = require('../models/subCategoriesModel');
 const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
@@ -70,27 +71,43 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteCategories = catchAsync(async (req, res, next) => {
+	if (!req.params.id) {
+		return next(new CustomError('Please provide a category ID', 400));
+		// Yes, it's a valid ObjectId, proceed with `findById` call.
+	}
 	if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
 		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
-	const category = await SubCategories.find({ category_id: req.params.id });
-	console.log(category);
-	// const category = await Categories.findById(req.params.id);
-	// if (!category) {
-	// 	return next(new CustomError('No category found with that id', 404));
-	// }
 
-	// const imagePath = path.join(__dirname, '..', 'public', category.image);
-	// fs.unlink(imagePath, async err => {
-	// 	if (err) {
-	// 		await Categories.findByIdAndDelete(req.params.id);
-	// 		return next(new CustomError('Error deleting category image', 500));
-	// 	} else {
-	// 		await Categories.findByIdAndDelete(req.params.id);
-	// 		return res.status(200).json({ status: 'success', data: {} });
-	// 	}
-	// });
+	// Checking if the category has dependent Subcategories or not
+	const categoryHasSubCategories = await SubCategories.find({
+		category_id: req.params.id,
+	});
+
+	if (!categoryHasSubCategories) {
+		const category = await Categories.findById(req.params.id);
+		if (!category) {
+			return next(new CustomError('No category found with that id', 404));
+		}
+
+		const imagePath = path.join(__dirname, '..', 'public', category.image);
+		fs.unlink(imagePath, async err => {
+			if (err) {
+				await Categories.findByIdAndDelete(req.params.id);
+				return next(new CustomError('Error deleting category image', 500));
+			} else {
+				await Categories.findByIdAndDelete(req.params.id);
+				return res.status(200).json({ status: 'success', data: {} });
+			}
+		});
+	}
+	return next(
+		new CustomError(
+			'There are sub-categories that depend on this category',
+			400
+		)
+	);
 
 	// old approach to deleting category image
 	// try {
