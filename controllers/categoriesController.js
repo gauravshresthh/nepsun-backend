@@ -60,7 +60,7 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
-	const category = await Categories.findById(req.params.id);
+	let category = await Categories.findById(req.params.id);
 	if (!category) {
 		return next(new CustomError('No category found with that id', 404));
 	}
@@ -73,7 +73,7 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 		}
 		return;
 	});
-	const category = await Categories.findByIdAndUpdate(req.params.id, req.body, {
+	category = await Categories.findByIdAndUpdate(req.params.id, req.body, {
 		runValidators: false,
 		new: true,
 	});

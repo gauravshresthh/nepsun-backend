@@ -61,7 +61,7 @@ exports.updateSubCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid sub-category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
-	const subCategory = await SubCategories.findById(req.params.id);
+	let subCategory = await SubCategories.findById(req.params.id);
 	if (!subCategory) {
 		return next(new CustomError('No sub-category found with that id', 404));
 	}
@@ -73,14 +73,10 @@ exports.updateSubCategories = catchAsync(async (req, res, next) => {
 		}
 		return;
 	});
-	const subCategory = await SubCategories.findByIdAndUpdate(
-		req.params.id,
-		req.body,
-		{
-			runValidators: false,
-			new: true,
-		}
-	);
+	subCategory = await SubCategories.findByIdAndUpdate(req.params.id, req.body, {
+		runValidators: false,
+		new: true,
+	});
 
 	res.status(200).json({ status: 'success', data: subCategory });
 });
