@@ -4,8 +4,34 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 const path = require('path');
 const compression = require('compression');
+const http = require('http');
+const socketIO = require('socket.io');
 const globalErrorHandler = require('./controllers/errorController');
 const app = express();
+
+let server = http.createServer(app);
+const io = socketIO(server, {
+	transports: ['polling'],
+	cors: {
+		cors: {
+			origin: 'http://localhost:3000',
+		},
+	},
+});
+
+io.on('connection', socket => {
+	console.log('A user is connected');
+
+	socket.on('message', message => {
+		console.log(`message from ${socket.id} : ${message}`);
+	});
+
+	socket.on('disconnect', () => {
+		console.log(`socket ${socket.id} disconnected`);
+	});
+});
+
+exports.io = io;
 const bodyParser = require('body-parser');
 // const fileupload = require('express-fileupload');
 
@@ -88,7 +114,7 @@ mongoose
 
 const port = process.env.PORT || 5000;
 
-const server = app.listen(port, () => {
+server = server.listen(port, () => {
 	console.log(`Server running at PORT : ${port}/`);
 });
 

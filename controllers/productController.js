@@ -4,10 +4,12 @@ const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
-// const { io } = require('../server');
+const { io } = require('../server');
+
 exports.createProduct = catchAsync(async (req, res, next) => {
 	req.body.created_by = req.user.id;
 	newProduct = await Product.create(req.body);
+	io.emit('order-added', newProduct);
 	res.status(201).json({ status: 'success', data: newProduct });
 });
 
@@ -24,11 +26,11 @@ exports.getAllProduct = catchAsync(async (req, res, next) => {
 		.populate({ path: 'created_by', select: 'name email' });
 	const products = await features.query;
 	const productCount = await Product.countDocuments();
-	// io.emit('order-added', products);
+
 	return res.status(200).json({
 		status: 'success',
 		total: productCount,
-		currentDataCount: product.length,
+		currentDataCount: products.length,
 		data: products,
 	});
 });
