@@ -61,6 +61,18 @@ exports.updateSubCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid sub-category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
+	const subCategory = await SubCategories.findById(req.params.id);
+	if (!subCategory) {
+		return next(new CustomError('No sub-category found with that id', 404));
+	}
+	let errorDeletingImage = false;
+	const imagePath = path.join(__dirname, '..', 'public', subCategory.image);
+	fs.unlink(imagePath, async err => {
+		if (err) {
+			errorDeletingImage = true;
+		}
+		return;
+	});
 	const subCategory = await SubCategories.findByIdAndUpdate(
 		req.params.id,
 		req.body,
@@ -70,9 +82,6 @@ exports.updateSubCategories = catchAsync(async (req, res, next) => {
 		}
 	);
 
-	if (!subCategory) {
-		return next(new CustomError('No sub-category found with that id', 404));
-	}
 	res.status(200).json({ status: 'success', data: subCategory });
 });
 

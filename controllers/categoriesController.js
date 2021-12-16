@@ -60,15 +60,27 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid category ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
+	const category = await Categories.findById(req.params.id);
+	if (!category) {
+		return next(new CustomError('No category found with that id', 404));
+	}
+
+	let errorDeletingImage = false;
+	const imagePath = path.join(__dirname, '..', 'public', category.image);
+	fs.unlink(imagePath, async err => {
+		if (err) {
+			errorDeletingImage = true;
+		}
+		return;
+	});
 	const category = await Categories.findByIdAndUpdate(req.params.id, req.body, {
 		runValidators: false,
 		new: true,
 	});
 
-	if (!category) {
-		return next(new CustomError('No category found with that id', 404));
-	}
-	res.status(200).json({ status: 'success', data: category });
+	res
+		.status(200)
+		.json({ status: 'success', errorDeletingImage, data: category });
 });
 
 exports.deleteCategories = catchAsync(async (req, res, next) => {
