@@ -3,6 +3,7 @@ const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
+const path = require('path');
 
 exports.createProduct = catchAsync(async (req, res, next) => {
 	req.body.created_by = req.user.id;
@@ -74,19 +75,22 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 	let errorDeletingImage = false;
 	product.images &&
 		product.images.map(image => {
-			imagePath = path.join(__dirname, '..', 'public', category.image);
+			imagePath = path.join(__dirname, '..', 'public', image);
 			fs.unlink(imagePath, err => {
 				if (err) {
-					errorDeletingImage = true;
+					return (errorDeletingImage = true);
 				}
+				return;
 			});
 		});
-	if (errorDeletingImage) {
-		await Categories.findByIdAndDelete(req.params.id);
-		return next(new CustomError('Error deleting category image', 500));
+	if (!errorDeletingImage) {
+		await Product.findByIdAndDelete(req.params.id);
+		return res
+			.status(200)
+			.json({ status: 'success', errorDeletingImage, data: {} });
 	}
-	await Categories.findByIdAndDelete(req.params.id);
-	return res.status(200).json({ status: 'success', data: {} });
+	await Product.findByIdAndDelete(req.params.id);
+	return next(new CustomError('Error deleting product images', 500));
 });
 
 exports.getLatestProducts = catchAsync(async (req, res, next) => {
