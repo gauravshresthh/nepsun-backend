@@ -7,7 +7,7 @@ const catchAsync = require('./../utils/catchAsync');
 const CustomError = require('./../utils/CustomError');
 const sendEmail = require('./../utils/email');
 const Joi = require('joi');
-const sendSMS = require('../utils/sendSMS');
+// const sendSMS = require('../utils/sendSMS');
 
 const signToken = id => {
 	return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -482,46 +482,46 @@ exports.verifyNumber = function (req, res, next) {
 	});
 };
 
-exports.resendCode = function (req, res, next) {
-	User.findOne({ phone: req.body.phone }, function (err, user) {
-		// user is not found into database
-		if (!user) {
-			return res.status(400).send({
-				msg: 'We were unable to find a user with that phone. Make sure your Phone number is correct!',
-			});
-		}
-		// user has been already verified
-		else if (user.isVerified) {
-			return res
-				.status(200)
-				.send('This number has been already verified. Please log in.');
-		}
-		// send verification link
-		else {
-			const otpCode = parseInt(Math.random() * 1000000);
-			// generate token and save
-			let token = new Token({ _userId: user._id, token: otpCode });
-			token.save(function (err) {
-				if (err) {
-					return res.status(500).send({ msg: err.message });
-				}
-				sendSMS(
-					`Your verification code :${token.token}`,
-					`+977${req.body.phone}`
-				)
-					.then(() => {
-						return res
-							.status(200)
-							.send(
-								'A verification code has been sent to ' +
-									user.phone +
-									'. It will be expire after 10 mins. If you did not get verification code click on resend token.'
-							);
-					})
-					.catch(err => {
-						return res.status(500).send(err.message);
-					});
-			});
-		}
-	});
-};
+// exports.resendCode = function (req, res, next) {
+// 	User.findOne({ phone: req.body.phone }, function (err, user) {
+// 		// user is not found into database
+// 		if (!user) {
+// 			return res.status(400).send({
+// 				msg: 'We were unable to find a user with that phone. Make sure your Phone number is correct!',
+// 			});
+// 		}
+// 		// user has been already verified
+// 		else if (user.isVerified) {
+// 			return res
+// 				.status(200)
+// 				.send('This number has been already verified. Please log in.');
+// 		}
+// 		// send verification link
+// 		else {
+// 			const otpCode = parseInt(Math.random() * 1000000);
+// 			// generate token and save
+// 			let token = new Token({ _userId: user._id, token: otpCode });
+// 			token.save(function (err) {
+// 				if (err) {
+// 					return res.status(500).send({ msg: err.message });
+// 				}
+// 				sendSMS(
+// 					`Your verification code :${token.token}`,
+// 					`+977${req.body.phone}`
+// 				)
+// 					.then(() => {
+// 						return res
+// 							.status(200)
+// 							.send(
+// 								'A verification code has been sent to ' +
+// 									user.phone +
+// 									'. It will be expire after 10 mins. If you did not get verification code click on resend token.'
+// 							);
+// 					})
+// 					.catch(err => {
+// 						return res.status(500).send(err.message);
+// 					});
+// 			});
+// 		}
+// 	});
+// };
