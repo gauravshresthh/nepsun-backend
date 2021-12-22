@@ -5,7 +5,7 @@ const User = require('./../models/userModel');
 const Token = require('./../models/tokenModel');
 const catchAsync = require('./../utils/catchAsync');
 const CustomError = require('./../utils/CustomError');
-const sendEmail = require('./../utils/email');
+const sendEmail = require('../utils/sendEmail');
 const Joi = require('joi');
 // const sendSMS = require('../utils/sendSMS');
 
@@ -188,6 +188,13 @@ exports.login = catchAsync(async (req, res, next) => {
 	// }
 
 	// 3) If everything ok, send token to client
+	const options = {
+		email: 'gaurav.shrestha@treeleaf.ai',
+		subject: 'logged in successfully',
+		text: 'hey there',
+	};
+	sendEmail(options);
+
 	createSendToken(user, 200, req, res);
 });
 
