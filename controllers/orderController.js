@@ -110,6 +110,11 @@ exports.updateOrderToPaid = catchAsync(async (req, res, next) => {
 });
 
 exports.getMyOrders = catchAsync(async (req, res) => {
-	const orders = await Orders.find({ user: req.user._id });
-	return res.status(200).json({ status: 'success', data: orders });
+	const orders = await Orders.find({ user_id: req.user._id });
+
+	return res.status(200).json({
+		status: 'success',
+		currentDataCount: orders.length,
+		data: orders,
+	});
 });

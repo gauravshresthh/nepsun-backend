@@ -144,8 +144,16 @@ exports.signup = catchAsync(async (req, res, next) => {
 	let user = new User(req.body);
 
 	user = await user.save();
-	createSendToken(user, 200, req, res);
+	return res.json({
+		status: 'success',
+		message:
+			'User created successfully. Please activate your account using the code sent at your email.',
+	});
 });
+
+// exports.verifyEmail = catchAsync(async (req, res, next) => {
+// 	return res.json({status:"success",data})
+// }
 
 exports.login = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -181,20 +189,14 @@ exports.login = catchAsync(async (req, res, next) => {
 	if (user.role === 'admin') {
 		return next(new CustomError('Not for admin login', 401));
 	}
-	// if (!user.isVerified) {
-	//   return res.status(401).send({
-	//     status: 'fail',
-	//     message: 'Your Email has not been verified. Please click on resend',
-	//   });
-	// }
+	if (!user.verified) {
+		return res.status(401).send({
+			status: 'fail',
+			message: 'Your Email has not been verified. Please verify first',
+		});
+	}
 
 	// 3) If everything ok, send token to client
-	const options = {
-		email: 'gaurav.shrestha@treeleaf.ai',
-		subject: 'logged in successfully',
-		text: 'hey there',
-	};
-	sendEmail(options);
 
 	createSendToken(user, 200, req, res);
 });
@@ -233,7 +235,7 @@ exports.loginAdmin = catchAsync(async (req, res, next) => {
 	if (user.role !== 'admin') {
 		return next(
 			new CustomError(
-				`Bad request . User with role : ${user.role} is not authorized to access this resource`,
+				`Bad request .You are not allowed to access this resource`,
 				401
 			)
 		);
@@ -366,9 +368,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 	// 3) Send it to user's email
 	try {
-		const resetURL = `${req.protocol}://${req.get(
-			'host'
-		)}/api/v1/users/resetPassword/${resetToken}`;
+		// const resetURL = `${req.protocol}://${req.get(
+		// 	'host'
+		// )}/api/v1/users/resetPassword/${resetToken}`;
 
 		const message = `Your password reset token : \n ${resetToken}`;
 
@@ -377,7 +379,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 			subject: 'Your password reset token valid for 10 minutes.',
 			message,
 		});
-		res.status(200).json({
+		return res.status(200).json({
 			status: 'success',
 			message: 'Token sent to email!',
 		});
@@ -393,7 +395,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 	}
 });
 
-exports.resetPassword = catchAsync(async (req, res, next) => {
+exports.verifyToken = catchAsync(async (req, res, next) => {
 	// 1) Get user based on the token
 	const token = req.body.token;
 	const email = req.body.email;
@@ -404,18 +406,60 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 	});
 
 	// 2) If token has not expired, and there is user, set the new password
-	if (!user) {
-		return next(new CustomError('Token is invalid or has expired', 400));
+	if (user) {
+		const data = { user_id: user._id, token };
+		return res.status(200).json({
+			status: 'success',
+			message: 'Token verified succesfully!',
+			data,
+		});
 	}
-	user.password = req.body.password;
-	user.passwordConfirm = req.body.passwordConfirm;
-	user.passwordResetToken = undefined;
-	user.passwordResetExpires = undefined;
-	await user.save();
+	return next(new CustomError('Token is invalid or has expired', 400));
+
+	// user.password = req.body.password;
+	// user.passwordConfirm = req.body.passwordConfirm;
+	// user.passwordResetToken = undefined;
+	// user.passwordResetExpires = undefined;
+	// await user.save();
 
 	// 3) Update changedPasswordAt property for the user
 	// 4) Log the user in, send JWT
-	createSendToken(user, 200, req, res);
+	// createSendToken(user, 200, req, res);
+});
+
+exports.resetPasswordWithToken = catchAsync(async (req, res, next) => {
+	// 1) Get user based on the token
+	const token = req.body.token;
+	const user_id = req.body.user_id;
+	const user = await User.findOne({
+		_id: user_id,
+		passwordResetToken: token,
+		passwordResetExpires: { $gt: Date.now() },
+	});
+
+	// 2) If token has not expired, and there is user, set the new password
+	if (user) {
+		user.password = req.body.password;
+		user.passwordResetToken = undefined;
+		user.passwordResetExpires = undefined;
+		user.passwordChangedAt = Date.now();
+		await user.save();
+		return res.status(200).json({
+			status: 'success',
+			message: 'Password changed succesfully!',
+		});
+	}
+	return next(new CustomError('Token is invalid or has expired', 400));
+
+	// user.password = req.body.password;
+	// user.passwordConfirm = req.body.passwordConfirm;
+	// user.passwordResetToken = undefined;
+	// user.passwordResetExpires = undefined;
+	// await user.save();
+
+	// 3) Update changedPasswordAt property for the user
+	// 4) Log the user in, send JWT
+	// createSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -423,13 +467,13 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 	const user = await User.findById(req.user.id).select('+password');
 
 	// 2) Check if POSTed current password is correct
-	if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+	if (!(await user.correctPassword(req.body.current_password, user.password))) {
 		return next(new CustomError('Your current password is wrong.', 401));
 	}
 
 	// 3) If so, update password
 	user.password = req.body.password;
-	user.passwordConfirm = req.body.passwordConfirm;
+	// user.passwordConfirm = req.body.passwordConfirm;
 	await user.save();
 	// User.findByIdAndUpdate will NOT work as intended!
 

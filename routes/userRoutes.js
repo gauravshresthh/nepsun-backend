@@ -8,13 +8,14 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.post('/loginAdmin', authController.loginAdmin);
 
-router.post('/forgotPassword', authController.forgotPassword);
-router.put('/resetPassword/:token', authController.resetPassword);
+router.post('/forgot-password', authController.forgotPassword);
+router.put('/reset-password', authController.resetPasswordWithToken);
+router.put('/verify-token', authController.verifyToken);
 
 // router.get('/confirmation/:phone/:token', authController.verifyNumber);
 
 router.put(
-	'/updateMyPassword',
+	'/update-my-password',
 	authController.protect,
 	authController.updatePassword
 );
@@ -25,13 +26,13 @@ router.get(
 	userController.getUser
 );
 router.put(
-	'/updateMe',
+	'/update-me',
 	authController.protect,
 	userController.uploadUserPhoto,
 	userController.resizeUserPhoto,
 	userController.updateMe
 );
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+router.delete('/delete-me', authController.protect, userController.deleteMe);
 
 router
 	.route('/admin')

@@ -56,10 +56,10 @@ exports.getMe = (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
 	// 1) Create error if user POSTs password data
-	if (req.body.password || req.body.passwordConfirm) {
+	if (req.body.password || req.body.role) {
 		return next(
 			new CustomError(
-				'This route is not for password updates. Please use /updateMyPassword.',
+				'This route is not for password/role updates. Please use other routes.',
 				400
 			)
 		);
@@ -92,7 +92,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
 	await User.findByIdAndUpdate(req.user.id, { active: false });
-
 	res.status(204).json({
 		status: 'success',
 		data: null,
