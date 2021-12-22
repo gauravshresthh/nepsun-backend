@@ -57,14 +57,19 @@ const userSchema = new mongoose.Schema(
 		phone: {
 			type: Number,
 		},
-		province: {
-			type: String,
-		},
-		district: {
-			type: String,
-		},
-		city: {
-			type: String,
+		address: {
+			province: {
+				type: String,
+			},
+			district: {
+				type: String,
+			},
+			city: {
+				type: String,
+			},
+			address: {
+				type: String,
+			},
 		},
 		active: {
 			type: Boolean,
