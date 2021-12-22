@@ -6,7 +6,7 @@ const catchAsync = require('./../utils/catchAsync');
 const CustomError = require('./../utils/CustomError');
 const sendEmail = require('../utils/sendEmail');
 const Joi = require('joi');
-
+const randomNumberGenerator = require('../utils/randomNumberGenerator');
 // const sendSMS = require('../utils/sendSMS');
 
 const signToken = id => {
@@ -35,76 +35,6 @@ const createSendToken = (user, statusCode, req, res) => {
 		// data: user,
 	});
 };
-
-// exports.signup = (req, res, next) => {
-//   User.findOne({ email: req.body.email }, function (err, user) {
-//     // error occur
-//     if (err) {
-//       return res.status(500).send({ status: 'fail', message: err.message });
-//     }
-//     // if phone is exist into database i.e. phone is associated with another user.
-//     else if (user) {
-//       return res.status(400).send({
-//         status: 'fail',
-//         message:
-//           'This phone number is already associated with another account.',
-//       });
-//     }
-//     // if user is not exist into database then save the user into database for register account
-//     else {
-//       User.findOne({ email: req.body.email }, function (err, user) {
-//         if (err) {
-//           return res.status(500).send({ status: 'fail', message: err.message });
-//         } else if (user) {
-//           return next(new CustomError(`Email Already Exists.`, 500));
-//         } else {
-//           user = new User(req.body);
-//           user.save(function (err) {
-//             if (err) {
-//               return next(new CustomError(`${err.message}`, 500));
-//             }
-//             var token = new Token({
-//               _userId: user._id,
-//               token: crypto.randomBytes(16).toString('hex'),
-//             });
-//             // generate token and save
-//             token.save(function (err) {
-//               if(err){
-//                 return res.status(500).send({msg:err.message});
-//               }
-
-//             token.save(function (err) {
-//               if (err) {
-//                 return res.status(500).send({ msg: err.message });
-//               }
-//               await sendEmail(
-//                 `Welcome to SSC .Your verification code :${token.token}`,
-//                 `${req.body.email}`
-//               );
-//               return res.status(200).json({
-//                 status: 'success',
-//                 message: `A verification code has been sent to ${user.email} . It will be expire after 10 minutes. If you did not get verification code click on resend token.`,
-//               });
-//               // .then(() => {
-//               //   return res
-//               //     .status(200)
-//               //     .send(
-//               //       'A verification code has been sent to ' +
-//               //         user.phone +
-//               //         '. It will be expire after one day. If you did not get verification code click on resend token.'
-//               //     );
-//               // })
-//               // .catch((err) => {
-//               //   return res.status(500).send(err.message);
-//               // });
-//             });
-//           });
-//         }
-//       );
-//       // create and save user
-//     }
-//   });
-// };
 
 exports.signup = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -141,7 +71,15 @@ exports.signup = catchAsync(async (req, res, next) => {
 	}
 
 	let user = new User(req.body);
+	const activationCode = randomNumberGenerator();
+	const message = `Your activation code is : \n ${activationCode}`;
 
+	await sendEmail({
+		email: user.email,
+		subject: 'Your Hamro Service account activation code.',
+		message,
+	});
+	user.otp = activationCode;
 	user = await user.save();
 	return res.json({
 		status: 'success',
@@ -149,10 +87,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 			'User created successfully. Please activate your account using the code sent at your email.',
 	});
 });
-
-// exports.verifyEmail = catchAsync(async (req, res, next) => {
-// 	return res.json({status:"success",data})
-// }
 
 exports.login = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -321,6 +255,51 @@ exports.permit = (...permittedRoles) => {
 	};
 };
 
+exports.resendActivationCode = catchAsync(async (req, res, next) => {
+	// 1) Get user based on POSTed email
+	if (!req.body.email)
+		return next(new CustomError('Please provide an email address.', 400));
+	const user = await User.findOne({ email: req.body.email });
+	if (user.verified) {
+		return next(new CustomError('User is already activated.', 400));
+	}
+
+	if (!user) {
+		return next(new CustomError('There is no user with email address.', 404));
+	}
+
+	// 2) Generate the random reset token
+	const otp = randomNumberGenerator();
+	user.otp = otp;
+	await user.save({ validateBeforeSave: false });
+
+	// 3) Send it to user's email
+	try {
+		// const resetURL = `${req.protocol}://${req.get(
+		// 	'host'
+		// )}/api/v1/users/resetPassword/${resetToken}`;
+
+		const message = `Your activation code is : \n ${otp}`;
+
+		await sendEmail({
+			email: req.body.email,
+			subject: 'New Activation code',
+			message,
+		});
+		return res.status(200).json({
+			status: 'success',
+			message: 'Activation code sent to email!',
+		});
+	} catch (err) {
+		user.otp = undefined;
+		await user.save({ validateBeforeSave: false });
+		return next(
+			new CustomError('There was an error sending the email. Try again later!'),
+			400
+		);
+	}
+});
+
 // Node js express  authentication and authorization middleware
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
@@ -387,28 +366,30 @@ exports.verifyToken = catchAsync(async (req, res, next) => {
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
 	// 1) Get user based on the token
-	const token = req.body.token;
+	const code = req.body.code;
 	const email = req.body.email;
-	if (!token || !email) {
+	if (!code || !email) {
 		return next(
-			new CustomError('Please provide token and email to verify', 400)
+			new CustomError('Please provide activation code and email to verify', 400)
 		);
 	}
 	const user = await User.findOne({
 		email,
-		passwordResetToken: token,
-		passwordResetExpires: { $gt: Date.now() },
+		otp: code,
 	});
-
 	// 2) If token has not expired, and there is user, set the new password
 	if (user) {
 		user.verified = true;
+		user.otp = undefined;
+		await user.save();
 		return res.status(200).json({
 			status: 'success',
 			message: 'Account activated succesfully, You can now login!',
 		});
 	}
-	return next(new CustomError('Token is invalid or has expired', 400));
+	return next(
+		new CustomError('Activation code is invalid or has expired', 400)
+	);
 });
 
 exports.resetPasswordWithToken = catchAsync(async (req, res, next) => {
@@ -434,16 +415,6 @@ exports.resetPasswordWithToken = catchAsync(async (req, res, next) => {
 		});
 	}
 	return next(new CustomError('Token is invalid or has expired', 400));
-
-	// user.password = req.body.password;
-	// user.passwordConfirm = req.body.passwordConfirm;
-	// user.passwordResetToken = undefined;
-	// user.passwordResetExpires = undefined;
-	// await user.save();
-
-	// 3) Update changedPasswordAt property for the user
-	// 4) Log the user in, send JWT
-	// createSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -467,95 +438,3 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
 // It is GET method, you have to write like that
 //    app.get('/confirmation/:email/:token',confirmEmail)
-
-exports.verifyNumber = function (req, res, next) {
-	Token.findOne({ token: req.params.token }, function (err, token) {
-		// token is not found into database i.e. token may have expired
-		if (!token) {
-			return res.status(400).send({
-				msg: 'Your verification code may have expired. Please click on resend for verify your number.',
-			});
-		}
-		// if token is found then check valid user
-		else {
-			User.findOne(
-				{ _id: token._userId, phone: req.params.phone },
-				function (err, user) {
-					// not valid user
-					if (!user) {
-						return res.status(401).send({
-							msg: 'We were unable to find a user for this verification. Please SignUp!',
-						});
-					}
-					// user is already verified
-					else if (user.isVerified) {
-						return res
-							.status(200)
-							.send('User has been already verified. Please Login');
-					}
-					// verify user
-					else {
-						// change isVerified to true
-						user.isVerified = true;
-						user.save(function (err) {
-							// error occur
-							if (err) {
-								return res.status(500).send({ msg: err.message });
-							}
-							// account successfully verified
-							else {
-								return res
-									.status(200)
-									.send('Your account has been successfully verified');
-							}
-						});
-					}
-				}
-			);
-		}
-	});
-};
-
-// exports.resendCode = function (req, res, next) {
-// 	User.findOne({ phone: req.body.phone }, function (err, user) {
-// 		// user is not found into database
-// 		if (!user) {
-// 			return res.status(400).send({
-// 				msg: 'We were unable to find a user with that phone. Make sure your Phone number is correct!',
-// 			});
-// 		}
-// 		// user has been already verified
-// 		else if (user.isVerified) {
-// 			return res
-// 				.status(200)
-// 				.send('This number has been already verified. Please log in.');
-// 		}
-// 		// send verification link
-// 		else {
-// 			const otpCode = parseInt(Math.random() * 1000000);
-// 			// generate token and save
-// 			let token = new Token({ _userId: user._id, token: otpCode });
-// 			token.save(function (err) {
-// 				if (err) {
-// 					return res.status(500).send({ msg: err.message });
-// 				}
-// 				sendSMS(
-// 					`Your verification code :${token.token}`,
-// 					`+977${req.body.phone}`
-// 				)
-// 					.then(() => {
-// 						return res
-// 							.status(200)
-// 							.send(
-// 								'A verification code has been sent to ' +
-// 									user.phone +
-// 									'. It will be expire after 10 mins. If you did not get verification code click on resend token.'
-// 							);
-// 					})
-// 					.catch(err => {
-// 						return res.status(500).send(err.message);
-// 					});
-// 			});
-// 		}
-// 	});
-// };
