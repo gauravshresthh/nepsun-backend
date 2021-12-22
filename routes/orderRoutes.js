@@ -15,7 +15,7 @@ router
 	.post(
 		authController.protect,
 		authController.permit('user'),
-		orderController.createOrder
+		orderController.placeOrder
 	);
 
 router
