@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
@@ -37,16 +36,6 @@ const userSchema = new mongoose.Schema(
 			minlength: [8, 'Password must be minimun of 8 lengths'],
 			select: false,
 		},
-		// passwordConfirm: {
-		//   type: String,
-		//   validate: {
-		//     // This only works on CREATE and SAVE!!!
-		//     validator: function (el) {
-		//       return el === this.password;
-		//     },
-		//     message: 'Passwords are not the same!',
-		//   },
-		// },
 		passwordChangedAt: Date,
 		passwordResetToken: String,
 		passwordResetExpires: Date,
