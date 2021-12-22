@@ -66,13 +66,16 @@ exports.updateCategories = catchAsync(async (req, res, next) => {
 	}
 
 	let errorDeletingImage = false;
-	const imagePath = path.join(__dirname, '..', 'public', category.image);
-	fs.unlink(imagePath, async err => {
-		if (err) {
-			errorDeletingImage = true;
-		}
-		return;
-	});
+	if (req.body.image) {
+		const imagePath = path.join(__dirname, '..', 'public', category.image);
+		fs.unlink(imagePath, async err => {
+			if (err) {
+				errorDeletingImage = true;
+			}
+			return;
+		});
+	}
+
 	category = await Categories.findByIdAndUpdate(req.params.id, req.body, {
 		runValidators: false,
 		new: true,
@@ -120,15 +123,4 @@ exports.deleteCategories = catchAsync(async (req, res, next) => {
 			return res.status(200).json({ status: 'success', data: {} });
 		}
 	});
-
-	// old approach to deleting category image
-	// try {
-	// 	fs.unlinkSync(`public/${category.image}`);
-	// 	await Categories.findByIdAndDelete(req.params.id);
-	// } catch (e) {
-	// 	errorDeletingImage = true;
-	// 	await Categories.findByIdAndDelete(req.params.id);
-	// }
-
-	// res.status(200).json({ status: 'success', errorDeletingImage, data: {} });
 });

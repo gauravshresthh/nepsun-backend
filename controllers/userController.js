@@ -27,10 +27,10 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
 	if (!req.file) return next();
 	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
 	req.body.photo = `uploads/${req.file.filename}`;
-	await sharp(file.buffer)
+	await sharp(req.file.buffer)
 		.toFormat('jpeg')
 		.jpeg({ quality: 100 })
-		.toFile(`public/uploads/${file.filename}`);
+		.toFile(`public/uploads/${req.file.filename}`);
 	next();
 });
 

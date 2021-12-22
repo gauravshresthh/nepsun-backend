@@ -26,7 +26,6 @@ exports.resizePhotos = catchAsync(async (req, res, next) => {
 		file.filename = `${Date.now()}${Math.round(Math.random() * 1e3)}.jpeg`;
 		images.push(`uploads/${file.filename}`);
 		await sharp(file.buffer)
-			.resize(1024)
 			.toFormat('jpeg')
 			.jpeg({ quality: 100 })
 			.toFile(`public/uploads/${file.filename}`);
@@ -42,7 +41,6 @@ exports.resizePhoto = catchAsync(async (req, res, next) => {
 	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
 	req.body.image = `uploads/${req.file.filename}`;
 	await sharp(req.file.buffer)
-		.resize(1024)
 		.toFormat('jpeg')
 		.jpeg({ quality: 100 })
 		.toFile(`public/uploads/${req.file.filename}`);

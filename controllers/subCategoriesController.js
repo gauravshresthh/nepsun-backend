@@ -66,19 +66,23 @@ exports.updateSubCategories = catchAsync(async (req, res, next) => {
 		return next(new CustomError('No sub-category found with that id', 404));
 	}
 	let errorDeletingImage = false;
-	const imagePath = path.join(__dirname, '..', 'public', subCategory.image);
-	fs.unlink(imagePath, async err => {
-		if (err) {
-			errorDeletingImage = true;
-		}
-		return;
-	});
+	if (req.body.image) {
+		const imagePath = path.join(__dirname, '..', 'public', subCategory.image);
+		fs.unlink(imagePath, async err => {
+			if (err) {
+				errorDeletingImage = true;
+			}
+			return;
+		});
+	}
 	subCategory = await SubCategories.findByIdAndUpdate(req.params.id, req.body, {
 		runValidators: false,
 		new: true,
 	});
 
-	res.status(200).json({ status: 'success', data: subCategory });
+	res
+		.status(200)
+		.json({ status: 'success', errorDeletingImage, data: subCategory });
 });
 
 exports.deleteSubCategories = catchAsync(async (req, res, next) => {
