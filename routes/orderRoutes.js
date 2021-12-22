@@ -1,8 +1,6 @@
 const express = require('express');
 const orderController = require('../controllers/orderController');
-
 const authController = require('../controllers/authController');
-
 const router = express.Router();
 
 router
@@ -19,16 +17,31 @@ router
 	);
 
 router
+	.route('/myorders')
+	.get(authController.protect, orderController.getMyOrders);
+
+router
 	.route('/:id')
 	.get(
 		authController.protect,
 		authController.permit('admin'),
 		orderController.getOrder
-	)
+	);
+
+router
+	.route('/:id/pay')
 	.put(
 		authController.protect,
 		authController.permit('admin'),
-		orderController.updateOrder
+		orderController.updateOrderToPaid
+	);
+
+router
+	.route('/:id/deliver')
+	.put(
+		authController.protect,
+		authController.permit('admin'),
+		orderController.updateOrderStatus
 	);
 
 module.exports = router;

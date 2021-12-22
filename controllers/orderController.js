@@ -2,7 +2,6 @@ const Orders = require('../models/orderModel');
 const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
-const fs = require('fs');
 
 exports.placeOrder = catchAsync(async (req, res, next) => {
 	req.body.user_id = req.user.id;
@@ -30,7 +29,7 @@ exports.getAllOrders = catchAsync(async (req, res, next) => {
 	});
 });
 
-exports.getOrders = catchAsync(async (req, res, next) => {
+exports.getOrder = catchAsync(async (req, res, next) => {
 	const Orders = await Orders.findById(req.params.id);
 
 	if (!Orders) {
@@ -77,7 +76,7 @@ exports.updateOrderToPaid = catchAsync(async (req, res, next) => {
 	return next(new CustomError('No Order found with that id', 404));
 });
 
-exports.getMyOrders = asyncHandler(async (req, res) => {
+exports.getMyOrders = catchAsync(async (req, res) => {
 	const orders = await Order.find({ user: req.user._id });
 	res.json(orders);
 });

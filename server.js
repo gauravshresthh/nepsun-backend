@@ -67,7 +67,7 @@ app.use(xss());
 // app.use(hpp());
 app.use(cors());
 // app.use(fileupload());
-
+const orderRouter = require('./routes/orderRoutes');
 const productRouter = require('./routes/productRoutes');
 const categoriesRouter = require('./routes/categoriesRoutes');
 const subCategoriesRouter = require('./routes/subCategoriesRoutes');
@@ -82,6 +82,7 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/categories', categoriesRouter);
 app.use('/api/v1/subcategories', subCategoriesRouter);
 app.use('/api/v1/reviews', reviewsRouter);
+app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {
