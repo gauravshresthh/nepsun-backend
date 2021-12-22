@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
@@ -192,7 +191,7 @@ exports.login = catchAsync(async (req, res, next) => {
 	if (!user.verified) {
 		return res.status(401).send({
 			status: 'fail',
-			message: 'Your Email has not been verified. Please verify first',
+			message: 'Your Account has not been activated. Please activate first',
 		});
 	}
 
@@ -307,37 +306,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 	next();
 });
 
-// Only for rendered pages, no errors!
-// exports.isLoggedIn = async (req, res, next) => {
-//   if (req.cookies.jwt) {
-//     try {
-//       // 1) verify token
-//       const decoded = await promisify(jwt.verify)(
-//         req.cookies.jwt,
-//         process.env.JWT_SECRET
-//       );
-
-//       // 2) Check if user still exists
-//       const currentUser = await User.findById(decoded.id);
-//       if (!currentUser) {
-//         return next();
-//       }
-
-//       // 3) Check if user changed password after the token was issued
-//       if (currentUser.changedPasswordAfter(decoded.iat)) {
-//         return next();
-//       }
-
-//       // THERE IS A LOGGED IN USER
-//       res.locals.user = currentUser;
-//       return next();
-//     } catch (err) {
-//       return next();
-//     }
-//   }
-//   next();
-// };
-
 exports.permit = (...permittedRoles) => {
 	return (req, res, next) => {
 		// roles ['admin', 'lead-guide']. role='user'
@@ -415,16 +383,32 @@ exports.verifyToken = catchAsync(async (req, res, next) => {
 		});
 	}
 	return next(new CustomError('Token is invalid or has expired', 400));
+});
 
-	// user.password = req.body.password;
-	// user.passwordConfirm = req.body.passwordConfirm;
-	// user.passwordResetToken = undefined;
-	// user.passwordResetExpires = undefined;
-	// await user.save();
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+	// 1) Get user based on the token
+	const token = req.body.token;
+	const email = req.body.email;
+	if (!token || !email) {
+		return next(
+			new CustomError('Please provide token and email to verify', 400)
+		);
+	}
+	const user = await User.findOne({
+		email,
+		passwordResetToken: token,
+		passwordResetExpires: { $gt: Date.now() },
+	});
 
-	// 3) Update changedPasswordAt property for the user
-	// 4) Log the user in, send JWT
-	// createSendToken(user, 200, req, res);
+	// 2) If token has not expired, and there is user, set the new password
+	if (user) {
+		user.verified = true;
+		return res.status(200).json({
+			status: 'success',
+			message: 'Account activated succesfully, You can now login!',
+		});
+	}
+	return next(new CustomError('Token is invalid or has expired', 400));
 });
 
 exports.resetPasswordWithToken = catchAsync(async (req, res, next) => {

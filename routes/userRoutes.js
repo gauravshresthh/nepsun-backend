@@ -9,12 +9,12 @@ router.post('/login', authController.login);
 router.post('/loginAdmin', authController.loginAdmin);
 
 router.post('/forgot-password', authController.forgotPassword);
-router.put('/reset-password', authController.resetPasswordWithToken);
-router.put('/verify-token', authController.verifyToken);
-
+router.post('/reset-password', authController.resetPasswordWithToken);
+router.post('/verify-token', authController.verifyToken);
+router.post('/verify-email', authController.verifyEmail);
 // router.get('/confirmation/:phone/:token', authController.verifyNumber);
 
-router.put(
+router.post(
 	'/update-my-password',
 	authController.protect,
 	authController.updatePassword
