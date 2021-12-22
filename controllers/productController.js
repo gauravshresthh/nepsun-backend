@@ -22,7 +22,7 @@ exports.getAllProduct = catchAsync(async (req, res, next) => {
 		.sort()
 		.limitFields()
 		.paginate()
-		.populate({ path: 'sub_categories_id', select: 'name' })
+		.populate({ path: 'sub_categories_id' })
 		.populate({ path: 'created_by', select: 'name email' });
 	const products = await features.query;
 	const productCount = await Product.countDocuments();
@@ -36,7 +36,9 @@ exports.getAllProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.getProduct = catchAsync(async (req, res, next) => {
-	const product = await Product.findById(req.params.id);
+	const product = await Product.findById(req.params.id)
+		.populate({ path: 'sub_categories_id' })
+		.populate({ path: 'created_by', select: 'name email' });
 
 	if (!product) {
 		return next(new CustomError('No Product found with that id', 404));
@@ -96,7 +98,11 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.getLatestProducts = catchAsync(async (req, res, next) => {
-	const products = await Product.find().sort({ createdAt: 1 }).limit(100);
+	const products = await Product.find()
+		.sort({ createdAt: 1 })
+		.limit(100)
+		.populate({ path: 'sub_categories_id' })
+		.populate({ path: 'created_by', select: 'name email' });
 	return res.status(200).json({
 		status: 'success',
 		currentDataCount: products.length,

@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+const orderItemSchema = mongoose.Schema(
+	{
+		product_id: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: [true, 'There must be a product info for order.'],
+			ref: 'product',
+		},
+		quantity: {
+			type: Number,
+			required: true,
+			default: 0,
+		},
+		price: { type: Number, required: true },
+	},
+	{
+		timestamps: true,
+	}
+);
+
 const orderSchema = new mongoose.Schema(
 	{
 		user_id: {
@@ -7,21 +26,7 @@ const orderSchema = new mongoose.Schema(
 			required: [true, 'There must be a user to order.'],
 			ref: 'user',
 		},
-		order_items: [
-			{
-				product_id: {
-					type: mongoose.Schema.Types.ObjectId,
-					required: [true, 'There must be a product info for order.'],
-					ref: 'product',
-				},
-				quantity: {
-					type: Number,
-					required: true,
-					default: 0,
-				},
-				price: { type: Number, required: true },
-			},
-		],
+		order_items: [orderItemSchema],
 		total: {
 			type: Number,
 			required: true,
@@ -32,10 +37,10 @@ const orderSchema = new mongoose.Schema(
 			required: true,
 			default: 'COD',
 		},
-		is_paid: {
-			type: Boolean,
+		payment_status: {
+			type: String,
 			required: true,
-			default: false,
+			default: 'pending',
 		},
 		paid_at: { type: Date },
 		order_status: {
@@ -45,8 +50,8 @@ const orderSchema = new mongoose.Schema(
 		},
 		delivered_at: { type: Date },
 		shipping_address: {
-			address: { type: String, required: true },
-			city: { type: String, required: true },
+			address: { type: String },
+			city: { type: String },
 		},
 		shipping_price: {
 			type: Number,

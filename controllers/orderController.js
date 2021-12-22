@@ -2,10 +2,41 @@ const Orders = require('../models/orderModel');
 const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
+const Joi = require('joi');
 
 exports.placeOrder = catchAsync(async (req, res, next) => {
+	const schema = Joi.object({
+		order_items: Joi.array().required(),
+		shipping_address: Joi.object({
+			address: Joi.string().required(),
+			city: Joi.string().required(),
+		}).required(),
+	});
+
+	const { error } = schema.validate({
+		order_items: req.body.order_items,
+		shipping_address: req.body.shipping_address,
+	});
+
+	if (error) {
+		return next(new CustomError(`${error.details[0].message}`, 403));
+	}
+	const { order_items, shipping_address } = req.body;
 	req.body.user_id = req.user.id;
-	newOrder = await Orders.create(req.body);
+	let total = 0;
+	if (order_items.length === 0) {
+		return next(new CustomError('No Order Items provided in the request', 400));
+	}
+	if (order_items) {
+		order_items.map(product => (total = total + product.price));
+	}
+	req.body.total = total;
+	const order = new Orders({
+		order_items,
+		shipping_address,
+		...req.body,
+	});
+	const newOrder = await order.save();
 	res.status(201).json({ status: 'success', data: newOrder });
 });
 
@@ -20,7 +51,7 @@ exports.getAllOrders = catchAsync(async (req, res, next) => {
 		.limitFields()
 		.paginate()
 		.populate({ path: 'user_id', select: 'name email' })
-		.populate({ path: 'product_id', select: 'name' });
+		.populate({ path: 'order_items.product_id' });
 	const orders = await features.query;
 	return res.status(200).json({
 		status: 'success',
@@ -30,12 +61,14 @@ exports.getAllOrders = catchAsync(async (req, res, next) => {
 });
 
 exports.getOrder = catchAsync(async (req, res, next) => {
-	const Orders = await Orders.findById(req.params.id);
+	const order = await Orders.findById(req.params.id)
+		.populate({ path: 'user_id', select: 'name email' })
+		.populate({ path: 'order_items.product_id' });
 
-	if (!Orders) {
+	if (!order) {
 		return next(new CustomError('No Order found with that id', 404));
 	}
-	res.status(200).json({ status: 'success', data: Orders });
+	res.status(200).json({ status: 'success', data: order });
 });
 
 exports.updateOrderStatus = catchAsync(async (req, res, next) => {
@@ -49,7 +82,7 @@ exports.updateOrderStatus = catchAsync(async (req, res, next) => {
 	}
 	const order = await Orders.findById(req.params.id);
 	if (order) {
-		order.order_status = 'Delivered';
+		order.order_status = req.body.order_status || 'Delivered';
 		order.delivered_at = Date.now();
 		const updatedOrder = await order.save();
 		return res.status(200).json({ status: 'success', data: updatedOrder });
@@ -68,7 +101,7 @@ exports.updateOrderToPaid = catchAsync(async (req, res, next) => {
 	}
 	const order = await Orders.findById(req.params.id);
 	if (order) {
-		order.is_paid = true;
+		order.payment_status = req.body.payment_status || 'paid';
 		order.paid_at = Date.now();
 		const updatedOrder = await order.save();
 		return res.status(200).json({ status: 'success', data: updatedOrder });
@@ -77,6 +110,6 @@ exports.updateOrderToPaid = catchAsync(async (req, res, next) => {
 });
 
 exports.getMyOrders = catchAsync(async (req, res) => {
-	const orders = await Order.find({ user: req.user._id });
-	res.json(orders);
+	const orders = await Orders.find({ user: req.user._id });
+	return res.status(200).json({ status: 'success', data: orders });
 });
