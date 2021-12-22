@@ -25,19 +25,12 @@ exports.uploadUserPhoto = upload.single('photo');
 
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
 	if (!req.file) return next();
-
-	req.file.filename = `user-${Date.now()}.jpeg`;
-
-	await sharp(req.file.buffer)
-		.resize(800)
+	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
+	req.body.photo = `uploads/${req.file.filename}`;
+	await sharp(file.buffer)
 		.toFormat('jpeg')
-		.jpeg({ quality: 90 })
-		.toFile(`public/img/users/${req.file.filename}`);
-
-	req.body.photo = `${req.protocol}://${req.get('host')}/img/users/${
-		req.file.filename
-	}`;
-
+		.jpeg({ quality: 100 })
+		.toFile(`public/uploads/${file.filename}`);
 	next();
 });
 
