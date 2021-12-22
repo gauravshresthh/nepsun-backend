@@ -7,6 +7,7 @@ const catchAsync = require('./../utils/catchAsync');
 const CustomError = require('./../utils/CustomError');
 const sendEmail = require('../utils/sendEmail');
 const Joi = require('joi');
+
 // const sendSMS = require('../utils/sendSMS');
 
 const signToken = id => {
@@ -369,7 +370,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 			'host'
 		)}/api/v1/users/resetPassword/${resetToken}`;
 
-		const message = `Forgot Your Password? Submit a Patch Request with your new password and PasswordConfirm to : ${resetURL} \n If you did not forget your password , please ignore this message.`;
+		const message = `Your password reset token : \n ${resetToken}`;
 
 		await sendEmail({
 			email: user.email,
@@ -394,13 +395,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
 	// 1) Get user based on the token
-	const hashedToken = crypto
-		.createHash('sha256')
-		.update(req.params.token)
-		.digest('hex');
-
+	const token = req.body.token;
+	const email = req.body.email;
 	const user = await User.findOne({
-		passwordResetToken: hashedToken,
+		email,
+		passwordResetToken: token,
 		passwordResetExpires: { $gt: Date.now() },
 	});
 

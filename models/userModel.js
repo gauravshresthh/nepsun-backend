@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const randomNumberGenerator = require('../utils/randomNumberGenerator');
 
 const userSchema = new mongoose.Schema(
 	{
@@ -122,12 +123,9 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-	const resetToken = crypto.randomBytes(32).toString('hex');
+	const resetToken = randomNumberGenerator();
 
-	this.passwordResetToken = crypto
-		.createHash('sha256')
-		.update(resetToken)
-		.digest('hex');
+	this.passwordResetToken = resetToken;
 
 	// console.log({ resetToken }, this.passwordResetToken);
 
