@@ -5,26 +5,8 @@ const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
 const { io } = require('../server');
-const Joi = require('joi');
 
 exports.createProduct = catchAsync(async (req, res, next) => {
-	const schema = Joi.object({
-		name: Joi.string().required(),
-		price: Joi.string().required(),
-	});
-
-	const { error } = schema.validate({
-		name: req.body.name,
-		price: req.body.price,
-	});
-	let imagesPaths = [];
-	if (req.body.images) {
-		imagesPaths = [...req.body.images];
-	}
-
-	if (error) {
-		return next(new CustomError(`${error.details[0].message}`, 400));
-	}
 	req.body.created_by = req.user.id;
 	newProduct = await Product.create(req.body);
 	io.emit('order-added', newProduct);
@@ -81,7 +63,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 		products.images.map(image => {
 			let errorDeletingImage = false;
 			const imagePath = path.join(__dirname, '..', 'public', image);
-			fs.unlink(imagePath, async err => {
+			fs.unlink(imagePath, err => {
 				if (err) {
 					errorDeletingImage = true;
 				}

@@ -1,6 +1,7 @@
 const express = require('express');
 const productController = require('../controllers/productController');
 const uploadPhotoHelper = require('../utils/uploadPhotoHelper');
+const uploadProductPhotos = require('../utils/uploadProductPhotos');
 const authController = require('../controllers/authController');
 
 const router = express.Router();
@@ -12,8 +13,8 @@ router
 	.post(
 		authController.protect,
 		authController.permit('admin'),
-		uploadPhotoHelper.uploadPhotos,
-		uploadPhotoHelper.resizePhotos,
+		uploadProductPhotos.uploadPhotos,
+		uploadProductPhotos.resizePhotos,
 		productController.createProduct
 	);
 
