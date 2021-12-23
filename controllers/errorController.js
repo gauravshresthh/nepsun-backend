@@ -30,8 +30,8 @@ const handleJWTExpiredError = () =>
 
 const handleMulterError = () => {
 	return new CustomError(
-		'Please enter valid email with field name as photo',
-		401
+		'Please check file size and enter valid fields with field name as "image/images"',
+		400
 	);
 };
 

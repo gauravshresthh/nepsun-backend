@@ -23,8 +23,8 @@ router
 	.put(
 		authController.protect,
 		authController.permit('admin'),
-		uploadPhotoHelper.uploadPhoto,
-		uploadPhotoHelper.resizePhoto,
+		uploadPhotoHelper.uploadPhotos,
+		uploadPhotoHelper.resizePhotos,
 		productController.updateProduct
 	)
 	.delete(

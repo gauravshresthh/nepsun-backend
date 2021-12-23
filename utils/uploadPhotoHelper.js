@@ -15,9 +15,10 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
 	storage: multerStorage,
 	fileFilter: multerFilter,
+	limits: { fileSize: 1 * 1000 * 1000 },
 });
 
-exports.uploadPhotos = upload.array('photos', 4);
+exports.uploadPhotos = upload.array('images', 4);
 
 exports.resizePhotos = catchAsync(async (req, res, next) => {
 	if (!req.files) return next();

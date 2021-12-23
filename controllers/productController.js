@@ -5,8 +5,22 @@ const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
 const { io } = require('../server');
+const Joi = require('joi');
 
 exports.createProduct = catchAsync(async (req, res, next) => {
+	const schema = Joi.object({
+		name: Joi.string().required(),
+		price: Joi.string().required(),
+	});
+
+	const { error } = schema.validate({
+		name: req.body.name,
+		price: req.body.price,
+	});
+
+	if (error) {
+		return next(new CustomError(`${error.details[0].message}`, 400));
+	}
 	req.body.created_by = req.user.id;
 	newProduct = await Product.create(req.body);
 	io.emit('order-added', newProduct);
@@ -55,14 +69,28 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid Product ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
+	const products = await Product.findById(req.params.id);
+	if (!products) {
+		return next(new CustomError('No Product found with that id', 404));
+	}
+	if (products && products.images) {
+		products.images.map(image => {
+			let errorDeletingImage = false;
+			const imagePath = path.join(__dirname, '..', 'public', image);
+			fs.unlink(imagePath, async err => {
+				if (err) {
+					errorDeletingImage = true;
+				}
+				return;
+			});
+		});
+	}
+
 	const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
 		runValidators: false,
 		new: true,
 	});
 
-	if (!product) {
-		return next(new CustomError('No Product found with that id', 404));
-	}
 	res.status(200).json({ status: 'success', data: product });
 });
 
