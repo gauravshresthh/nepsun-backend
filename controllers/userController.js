@@ -3,7 +3,6 @@ const sharp = require('sharp');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const CustomError = require('./../utils/CustomError');
-const factory = require('./handlerFactory');
 const APIFeatures = require('../utils/apiFeatures');
 
 const multerStorage = multer.memoryStorage();
@@ -59,15 +58,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 	}
 
 	// 2) Filtered out unwanted fields names that are not allowed to be updated
-	const filteredBody = filterObj(
-		req.body,
-		'name',
-		'photo',
-		'province',
-		'district',
-		'city',
-		'phone'
-	);
+	const filteredBody = filterObj(req.body, 'name', 'photo', 'phone');
 
 	// 3) Update user document
 	const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {

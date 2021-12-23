@@ -2,7 +2,6 @@ const Reviews = require('../models/reviewsModel');
 const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
-const fs = require('fs');
 
 exports.createReviews = catchAsync(async (req, res, next) => {
 	req.body.user_id = req.user.id;
