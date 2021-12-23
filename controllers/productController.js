@@ -17,6 +17,10 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 		name: req.body.name,
 		price: req.body.price,
 	});
+	let imagesPaths = [];
+	if (req.body.images) {
+		imagesPaths = [...req.body.images];
+	}
 
 	if (error) {
 		return next(new CustomError(`${error.details[0].message}`, 400));
