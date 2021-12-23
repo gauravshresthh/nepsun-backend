@@ -7,6 +7,29 @@ const fs = require('fs');
 const path = require('path');
 
 exports.createCategories = catchAsync(async (req, res, next) => {
+	const schema = Joi.object({
+		name: Joi.string().required(),
+		image: Joi.string().required(),
+	});
+
+	const { error } = schema.validate({
+		name: req.body.name,
+		image: req.body.image,
+	});
+
+	if (error) {
+		let errorDeletingImage = false;
+		if (req.body.image) {
+			const imagePath = path.join(__dirname, '..', 'public', req.body.image);
+			fs.unlink(imagePath, async err => {
+				if (err) {
+					errorDeletingImage = true;
+				}
+				return;
+			});
+		}
+		return next(new CustomError(`${error.details[0].message}`, 400));
+	}
 	const { name } = req.body;
 	const categoriesExists = await Categories.findOne({ name });
 

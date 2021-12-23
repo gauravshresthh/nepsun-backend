@@ -5,6 +5,7 @@ const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
 
 exports.createSubCategories = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -20,7 +21,17 @@ exports.createSubCategories = catchAsync(async (req, res, next) => {
 	});
 
 	if (error) {
-		return next(new CustomError(`${error.details[0].message}`, 403));
+		let errorDeletingImage = false;
+		if (req.body.image) {
+			const imagePath = path.join(__dirname, '..', 'public', req.body.image);
+			fs.unlink(imagePath, async err => {
+				if (err) {
+					errorDeletingImage = true;
+				}
+				return;
+			});
+		}
+		return next(new CustomError(`${error.details[0].message}`, 400));
 	}
 	newSubCategory = await SubCategories.create(req.body);
 	res.status(201).json({ status: 'success', data: newSubCategory });

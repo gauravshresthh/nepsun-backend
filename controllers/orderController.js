@@ -19,7 +19,7 @@ exports.placeOrder = catchAsync(async (req, res, next) => {
 	});
 
 	if (error) {
-		return next(new CustomError(`${error.details[0].message}`, 403));
+		return next(new CustomError(`${error.details[0].message}`, 400));
 	}
 	const { order_items, shipping_address } = req.body;
 	req.body.user_id = req.user.id;
