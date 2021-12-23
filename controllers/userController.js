@@ -154,4 +154,14 @@ exports.updateUser = catchAsync(async (req, res, next) => {
 	res.status(200).json({ status: 'success', data: user });
 });
 
-exports.deleteUser = factory.deleteOne(User);
+exports.deleteUser = catchAsync(async (req, res, next) => {
+	if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+		return next(new CustomError('Invalid user ID provided.', 400));
+		// Yes, it's a valid ObjectId, proceed with `findById` call.
+	}
+	await User.findByIdAndUpdate(req.params.id, { active: false });
+	res.status(204).json({
+		status: 'success',
+		data: null,
+	});
+});
