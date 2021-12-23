@@ -5,6 +5,7 @@ const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
 
 exports.createCategories = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -34,6 +35,16 @@ exports.createCategories = catchAsync(async (req, res, next) => {
 	const categoriesExists = await Categories.findOne({ name });
 
 	if (categoriesExists) {
+		let errorDeletingImage = false;
+		if (req.body.image) {
+			const imagePath = path.join(__dirname, '..', 'public', req.body.image);
+			fs.unlink(imagePath, async err => {
+				if (err) {
+					errorDeletingImage = true;
+				}
+				return;
+			});
+		}
 		return res.status(400).json({
 			status: 'fail',
 			message: `Category with that name ${name} already exists.`,
