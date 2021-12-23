@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema(
 		},
 		count_in_stock: {
 			type: Number,
-			default: 0,
+			default: 1,
 		},
 		video_url: String,
 		colors: Array,
