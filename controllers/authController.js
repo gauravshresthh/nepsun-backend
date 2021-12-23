@@ -6,7 +6,6 @@ const CustomError = require('./../utils/CustomError');
 const sendEmail = require('../utils/sendEmail');
 const Joi = require('joi');
 const randomNumberGenerator = require('../utils/randomNumberGenerator');
-// const sendSMS = require('../utils/sendSMS');
 
 const signToken = id => {
 	return jwt.sign({ id }, process.env.JWT_SECRET, {
