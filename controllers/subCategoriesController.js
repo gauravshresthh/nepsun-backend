@@ -7,16 +7,21 @@ const fs = require('fs');
 const path = require('path');
 
 exports.createSubCategories = catchAsync(async (req, res, next) => {
-	const { name } = req.body;
-	const subCategoriesExists = await SubCategories.findOne({ name });
+	const schema = Joi.object({
+		name: Joi.string().required(),
+		image: Joi.string().required(),
+		category_id: Joi.string().required(),
+	});
 
-	if (subCategoriesExists) {
-		return res.status(400).json({
-			status: 'fail',
-			message: `Sub-category with that name ${name} already exists.`,
-		});
+	const { error } = schema.validate({
+		name: req.body.name,
+		image: req.body.image,
+		category_id: req.body.category_id,
+	});
+
+	if (error) {
+		return next(new CustomError(`${error.details[0].message}`, 403));
 	}
-
 	newSubCategory = await SubCategories.create(req.body);
 	res.status(201).json({ status: 'success', data: newSubCategory });
 });
