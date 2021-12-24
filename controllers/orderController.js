@@ -76,6 +76,10 @@ exports.getOrder = catchAsync(async (req, res, next) => {
 	if (!order) {
 		return next(new CustomError('No Order found with that id', 404));
 	}
+	if (!order.is_seen) {
+		order.is_seen = true;
+		await order.save();
+	}
 	res.status(200).json({ status: 'success', data: order });
 });
 

@@ -11,7 +11,7 @@ const app = express();
 
 let server = http.createServer(app);
 const io = socketIO(server, {
-	transports: ["polling"],
+	transports: ['websocket'],
 	cors: {
 		cors: {
 			origin: 'http://localhost:3000',

@@ -47,7 +47,7 @@ const orderSchema = new mongoose.Schema(
 		order_status: {
 			type: String,
 			required: true,
-			default: 'Received',
+			default: 'received',
 		},
 		delivered_at: { type: Date },
 		shipping_address: {
@@ -58,6 +58,11 @@ const orderSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 			default: 0.0,
+		},
+		is_seen: {
+			type: Boolean,
+			default: false,
+			required: true,
 		},
 	},
 	{ timestamps: true }
