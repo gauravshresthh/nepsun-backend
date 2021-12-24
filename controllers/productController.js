@@ -5,11 +5,13 @@ const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
 const { io } = require('../server');
+const randomNumberGenerator = require('../utils/randomNumberGenerator');
 
 exports.createProduct = catchAsync(async (req, res, next) => {
 	req.body.created_by = req.user.id;
+	req.body.ref_id = randomNumberGenerator(1000000000000000, 9999999999999999);
 	newProduct = await Product.create(req.body);
-	io.emit('order-added', newProduct);
+	io.emit('product-added', newProduct);
 	res.status(201).json({ status: 'success', data: newProduct });
 });
 

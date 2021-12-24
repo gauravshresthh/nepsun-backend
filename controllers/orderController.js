@@ -3,6 +3,8 @@ const CustomError = require('../utils/CustomError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 const Joi = require('joi');
+const { io } = require('../server');
+const randomNumberGenerator = require('../utils/randomNumberGenerator');
 
 exports.placeOrder = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -28,15 +30,19 @@ exports.placeOrder = catchAsync(async (req, res, next) => {
 		return next(new CustomError('No Order Items provided in the request', 400));
 	}
 	if (order_items) {
-		order_items.map(product => (total = total + product.price));
+		order_items.map(
+			product => (total = total + product.price * product.quantity)
+		);
 	}
 	req.body.total = total;
+	req.body.ref_id = randomNumberGenerator(1000000000000000, 9999999999999999);
 	const order = new Orders({
 		order_items,
 		shipping_address,
 		...req.body,
 	});
 	const newOrder = await order.save();
+	io.emit('order-added', newOrder);
 	res.status(201).json({ status: 'success', data: newOrder });
 });
 
@@ -50,12 +56,14 @@ exports.getAllOrders = catchAsync(async (req, res, next) => {
 		.sort()
 		.limitFields()
 		.paginate()
-		.populate({ path: 'user_id', select: 'name email' })
+		.populate({ path: 'user_id', select: 'name email phone' })
 		.populate({ path: 'order_items.product_id' });
 	const orders = await features.query;
+	const totalOrders = await Orders.countDocuments();
 	return res.status(200).json({
 		status: 'success',
 		currentDataCount: orders.length,
+		totalOrders,
 		data: orders,
 	});
 });

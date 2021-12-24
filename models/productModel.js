@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema(
 		images: {
 			type: Array,
 		},
+		ref_id: { type: String },
 		tags: { type: Array },
 		sub_categories_id: {
 			type: mongoose.Schema.Types.ObjectId,

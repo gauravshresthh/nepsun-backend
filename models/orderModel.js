@@ -32,6 +32,7 @@ const orderSchema = new mongoose.Schema(
 			required: true,
 			default: 0.0,
 		},
+		ref_id: { type: String },
 		payment_type: {
 			type: String,
 			required: true,

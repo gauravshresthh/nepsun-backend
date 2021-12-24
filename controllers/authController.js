@@ -40,7 +40,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 		email: Joi.string()
 			.email({
 				minDomainSegments: 2,
-				tlds: { allow: ['com', 'net'] },
+				tlds: { allow: ['com', 'net', 'ai'] },
 			})
 			.required(),
 		password: Joi.string()
@@ -91,7 +91,7 @@ exports.login = catchAsync(async (req, res, next) => {
 		password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
 		email: Joi.string().email({
 			minDomainSegments: 2,
-			tlds: { allow: ['com', 'net'] },
+			tlds: { allow: ['com', 'net', 'ai'] },
 		}),
 	});
 
@@ -137,7 +137,7 @@ exports.loginAdmin = catchAsync(async (req, res, next) => {
 		password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
 		email: Joi.string().email({
 			minDomainSegments: 2,
-			tlds: { allow: ['com', 'net'] },
+			tlds: { allow: ['com', 'net', 'ai'] },
 		}),
 	});
 

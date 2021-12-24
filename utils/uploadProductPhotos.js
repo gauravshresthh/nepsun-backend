@@ -5,28 +5,31 @@ const catchAsync = require('./catchAsync');
 const multerStorage = multer.memoryStorage();
 const Joi = require('joi');
 
-function hasRequiredFields(fields, cb) {
+function hasRequiredFields(fields) {
+	console.log(fields);
 	const schema = Joi.object({
 		name: Joi.string().required(),
 		price: Joi.string().required(),
-		images: Joi.required(),
 	});
 
 	const { error } = schema.validate({
 		name: fields.name,
 		price: fields.price,
-		images: fields.images,
 	});
 	if (error) {
-		cb(new CustomError(`${error.details[0].message}`, 400), false);
+		return error;
 	}
-	cb(null, true);
 	return;
 	// 1. Implement this!
 }
 
 const multerFilter = (req, file, cb) => {
-	cb(null, hasRequiredFields(req.body, cb));
+	if (hasRequiredFields(req.body)) {
+		cb(
+			new CustomError(`${hasRequiredFields(req.body).details[0].message}`, 400),
+			false
+		);
+	}
 	if (file.mimetype.startsWith('image')) {
 		cb(null, true);
 	} else {

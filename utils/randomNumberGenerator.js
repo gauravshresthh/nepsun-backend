@@ -1,7 +1,9 @@
-function randomNumberGenerator() {
-	const min = 1000;
-	const max = 9999;
-	const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+function randomNumberGenerator(min, max) {
+	const minimumValue = min || 1000;
+	const maximumValue = max || 9999;
+	const randomNumber =
+		Math.floor(Math.random() * (maximumValue - minimumValue + 1)) +
+		minimumValue;
 	return randomNumber;
 }
 
