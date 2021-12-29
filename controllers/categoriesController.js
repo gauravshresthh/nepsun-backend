@@ -64,7 +64,8 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
 		.filter({ name: regex })
 		.sort()
 		.limitFields()
-		.paginate();
+		.paginate()
+		.populate({ path: 'parent_category_id' });
 	const categories = await features.query;
 	const categoriesCount = await Categories.countDocuments();
 

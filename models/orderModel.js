@@ -64,6 +64,10 @@ const orderSchema = new mongoose.Schema(
 			default: false,
 			required: true,
 		},
+		order_updated_by: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'user',
+		},
 	},
 	{ timestamps: true }
 );

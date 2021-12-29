@@ -10,6 +10,10 @@ const categoriesSchema = new mongoose.Schema(
 			type: String,
 			required: [true, 'A category must have an image'],
 		},
+		parent_category_id: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'categories',
+		},
 		is_active: {
 			type: Boolean,
 			default: true,

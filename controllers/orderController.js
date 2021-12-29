@@ -57,7 +57,8 @@ exports.getAllOrders = catchAsync(async (req, res, next) => {
 		.limitFields()
 		.paginate()
 		.populate({ path: 'user_id', select: 'name email phone' })
-		.populate({ path: 'order_items.product_id' });
+		.populate({ path: 'order_items.product_id' })
+		.populate({ path: 'order_updated_by' });
 	const orders = await features.query;
 	const totalOrders = await Orders.countDocuments();
 	return res.status(200).json({
@@ -94,6 +95,7 @@ exports.updateOrderStatus = catchAsync(async (req, res, next) => {
 	}
 	const order = await Orders.findById(req.params.id);
 	if (order) {
+		order.order_updated_by = req.user.id;
 		order.order_status = req.body.order_status || 'Delivered';
 		order.delivered_at = Date.now();
 		const updatedOrder = await order.save();
@@ -111,8 +113,10 @@ exports.updateOrderToPaid = catchAsync(async (req, res, next) => {
 		return next(new CustomError('Invalid Order ID provided.', 400));
 		// Yes, it's a valid ObjectId, proceed with `findById` call.
 	}
+
 	const order = await Orders.findById(req.params.id);
 	if (order) {
+		order_updated_by = req.user.id;
 		order.payment_status = req.body.payment_status || 'paid';
 		order.paid_at = Date.now();
 		const updatedOrder = await order.save();
