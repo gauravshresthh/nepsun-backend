@@ -6,7 +6,6 @@ const multerStorage = multer.memoryStorage();
 const Joi = require('joi');
 
 function hasRequiredFields(fields) {
-	console.log(fields);
 	const schema = Joi.object({
 		name: Joi.string().required(),
 		price: Joi.string().required(),

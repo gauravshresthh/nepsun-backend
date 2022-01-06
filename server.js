@@ -50,7 +50,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 if (process.env.NODE_ENV == 'development') {
 	app.use(morgan('dev'));
 }
-console.log(path.join(__dirname, 'public'));
 
 app.use(mongoSanitize());
 app.use(helmet());
