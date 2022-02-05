@@ -6,8 +6,9 @@ const CustomError = require('./../utils/CustomError');
 const sendEmail = require('../utils/sendEmail');
 const Joi = require('joi');
 const randomNumberGenerator = require('../utils/randomNumberGenerator');
+const { addJobToQueue } = require('../lib/bull');
 
-const signToken = id => {
+const signToken = (id) => {
 	return jwt.sign({ id }, process.env.JWT_SECRET, {
 		expiresIn: process.env.JWT_EXPIRES_IN,
 	});
@@ -79,6 +80,15 @@ exports.signup = catchAsync(async (req, res, next) => {
 	});
 	user.otp = activationCode;
 	user = await user.save();
+
+	const deleteUserAfter24Hrs = 1000 * 60 * 60 * 24;
+	await addJobToQueue(
+		{ userId: user._id },
+		{
+			delay: deleteUserAfter24Hrs,
+		}
+	);
+
 	return res.json({
 		status: 'success',
 		message:
