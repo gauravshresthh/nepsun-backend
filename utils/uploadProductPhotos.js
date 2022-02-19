@@ -42,14 +42,16 @@ const upload = multer({
 	limits: { fileSize: 1 * 1000 * 1000 },
 });
 
-exports.uploadPhotos = upload.array('images', 4);
+exports.uploadPhotos = upload.array('images', 8);
 
 exports.resizePhotos = catchAsync(async (req, res, next) => {
 	if (!req.files) return next();
 	let images = [];
 	req.files.map(async file => {
 		file.filename = `${Date.now()}${Math.round(Math.random() * 1e3)}.jpeg`;
-		images.push(`uploads/${file.filename}`);
+		images.push(
+			`${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+		);
 		await sharp(file.buffer)
 			.toFormat('jpeg')
 			.jpeg({ quality: 100 })

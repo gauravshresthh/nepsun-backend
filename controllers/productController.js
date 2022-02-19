@@ -8,6 +8,16 @@ const { io } = require('../server');
 const randomNumberGenerator = require('../utils/randomNumberGenerator');
 
 exports.createProduct = catchAsync(async (req, res, next) => {
+	// console.log(req.files);
+	// let images = [];
+	// req.files &&
+	// 	req.files.images &&
+	// 	Array.from(req.files.images).map(image => {
+	// 		let imagePath = `/uploads/${image.filename}`;
+	// 		images.push(imagePath);
+	// 	});
+
+	// req.body.images = images;
 	req.body.created_by = req.user.id;
 	req.body.ref_id = randomNumberGenerator(1000000000000000, 9999999999999999);
 	newProduct = await Product.create(req.body);

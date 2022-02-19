@@ -25,7 +25,9 @@ exports.resizePhotos = catchAsync(async (req, res, next) => {
 	let images = [];
 	req.files.map(async file => {
 		file.filename = `${Date.now()}${Math.round(Math.random() * 1e3)}.jpeg`;
-		images.push(`uploads/${file.filename}`);
+		images.push(
+			`${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+		);
 		await sharp(file.buffer)
 			.toFormat('jpeg')
 			.jpeg({ quality: 100 })
@@ -40,7 +42,9 @@ exports.uploadPhoto = upload.single('image');
 exports.resizePhoto = catchAsync(async (req, res, next) => {
 	if (!req.file) return next();
 	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
-	req.body.image = `uploads/${req.file.filename}`;
+	req.body.image = `${req.protocol}://${req.get('host')}/uploads/${
+		file.filename
+	}`;
 	await sharp(req.file.buffer)
 		.toFormat('jpeg')
 		.jpeg({ quality: 100 })
