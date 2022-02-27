@@ -12,9 +12,9 @@ const productSchema = new mongoose.Schema(
 		},
 		ref_id: { type: String },
 		tags: { type: Array },
-		sub_categories_id: {
+		categories_id: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'sub_categories',
+			ref: 'categories',
 		},
 		count_in_stock: {
 			type: Number,
