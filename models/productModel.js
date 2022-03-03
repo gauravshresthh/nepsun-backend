@@ -8,10 +8,10 @@ const productSchema = new mongoose.Schema(
 		},
 		model: String,
 		images: {
-			type: Array,
+			type: [String],
 		},
 		ref_id: { type: String },
-		tags: { type: Array },
+		tags: { type: [String] },
 		categories_id: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'categories',
@@ -21,9 +21,9 @@ const productSchema = new mongoose.Schema(
 			default: 1,
 		},
 		video_url: String,
-		colors: Array,
-		sizes: Array,
-		variant: Array,
+		colors: [String],
+		sizes: [String],
+		variant: [String],
 		is_active: {
 			type: Boolean,
 			default: true,

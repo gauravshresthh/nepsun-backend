@@ -18,6 +18,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 	// 	});
 
 	// req.body.images = images;
+	console.log(req.body);
 	req.body.created_by = req.user.id;
 	req.body.ref_id = randomNumberGenerator(1000000000000000, 9999999999999999);
 	newProduct = await Product.create(req.body);
