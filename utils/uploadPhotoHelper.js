@@ -43,7 +43,7 @@ exports.resizePhoto = catchAsync(async (req, res, next) => {
 	if (!req.file) return next();
 	req.file.filename = `${Date.now()}${Math.round(Math.random() * 1e4)}.jpeg`;
 	req.body.image = `${req.protocol}://${req.get('host')}/uploads/${
-		file.filename
+		req.file.filename
 	}`;
 	await sharp(req.file.buffer)
 		.toFormat('jpeg')
