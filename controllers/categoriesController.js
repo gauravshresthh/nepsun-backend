@@ -6,6 +6,7 @@ const APIFeatures = require('../utils/apiFeatures');
 const fs = require('fs');
 const path = require('path');
 const Joi = require('joi');
+const { get } = require('http');
 
 exports.createCategories = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -67,13 +68,18 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
 		.paginate()
 		.populate({ path: 'parent_category_id' });
 	const categories = await features.query;
+
+	let newCategories;
+	newCategories = await Categories.find();
+
+	
 	const categoriesCount = await Categories.countDocuments();
 
 	return res.status(200).json({
 		status: 'success',
 		total: categoriesCount,
 		currentDataCount: categories.length,
-		data: categories,
+		data: newCategories,
 	});
 });
 

@@ -26,6 +26,13 @@ const categoriesSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
+function autoPopulateParentCategoryIds(next) {
+	this.populate('parent_category_id');
+	next();
+}
+
+categoriesSchema.pre('findOne', autoPopulateParentCategoryIds).pre('find', autoPopulateParentCategoryIds);
+
 const Categories = mongoose.model('categories', categoriesSchema);
 
 module.exports = Categories;
