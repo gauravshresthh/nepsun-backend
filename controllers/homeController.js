@@ -15,6 +15,6 @@ exports.hahaha = (req, res, next) => {
 
 exports.product = (req, res, next) => {
   const id = req.params.id;
-  const text = `You requested for product ${id} testing git commit`;
+  const text = `You requested for product ${id} testing git commit......`;
   return res.json({ status: "success", data: text });
 };
