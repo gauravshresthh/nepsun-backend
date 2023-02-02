@@ -1,4 +1,5 @@
 const express = require("express");
+const { Configuration, OpenAIApi } = require("openai");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const morgan = require("morgan");
@@ -128,3 +129,19 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
+
+//chatGPT Integration
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+async function runCompletion() {
+  const completion = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: "How are you today?",
+  });
+  console.log(completion.data.choices[0].text);
+}
+
+runCompletion();
