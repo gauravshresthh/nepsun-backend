@@ -1,5 +1,4 @@
 const express = require("express");
-const { Configuration, OpenAIApi } = require("openai");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const morgan = require("morgan");
@@ -74,12 +73,12 @@ const subCategoriesRouter = require("./routes/subCategoriesRoutes");
 const reviewsRouter = require("./routes/reviewsRoutes");
 const userRouter = require("./routes/userRoutes");
 const homeRouter = require("./routes/homeRoutes");
-const practiceRouter = require("./routes/practiceRoutes");
+const chatgptRouter = require("./routes/chatgptRoutes");
 const CustomError = require("./utils/CustomError");
 
 app.use("/", homeRouter);
 
-app.use("/practice", practiceRouter);
+app.use("/chatgpt", chatgptRouter);
 
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/categories", categoriesRouter);
@@ -129,19 +128,3 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
-
-//chatGPT Integration
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-async function runCompletion() {
-  const completion = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: "How are you today?",
-  });
-  console.log(completion.data.choices[0].text);
-}
-
-runCompletion();
